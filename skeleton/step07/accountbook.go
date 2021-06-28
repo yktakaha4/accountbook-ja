@@ -10,18 +10,18 @@ type Item struct {
 	Price    int
 }
 
-// 家計簿の処理を行う型
+// AccountBook 家計簿の処理を行う型
 type AccountBook struct {
 	db *sql.DB
 }
 
-// 新しいAccountBookを作成する
+// NewAccountBook 新しいAccountBookを作成する
 func NewAccountBook(db *sql.DB) *AccountBook {
 	// AccountBookのポインタを返す
 	return &AccountBook{db: db}
 }
 
-// テーブルがなかったら作成する
+// CreateTable テーブルがなかったら作成する
 func (ab *AccountBook) CreateTable() error {
 	const sqlStr = `CREATE TABLE IF NOT EXISTS items(
 		id        INTEGER PRIMARY KEY,
@@ -37,26 +37,26 @@ func (ab *AccountBook) CreateTable() error {
 	return nil
 }
 
-// データベースに新しいItemを追加する
+// AddItem データベースに新しいItemを追加する
 func (ab *AccountBook) AddItem(item *Item) error {
-	// TODO:
 	// SQLのINSERTを使ってデータベースに保存する
 	// ?の部分にcategoryやpriceの値が来る
 	const sqlStr = `INSERT INTO items(category, price) VALUES (?,?);`
+	_, err := ab.db.Exec(sqlStr, item.Category, item.Price)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// 最近追加したものを最大limit件だけItemを取得する
+// GetItems 最近追加したものを最大limit件だけItemを取得する
 // エラーが発生したら第2戻り値で返す
 func (ab *AccountBook) GetItems(limit int) ([]*Item, error) {
-	// TODO:
 	// SELECTでitemsテーブルの最新limit件を取得lする
 	// ORDER BY id DESCでidの降順（大きい順）=最近追加したものが先にくる
 	// LIMITで件数を最大の取得する件数を絞る
-	const sqlStr = `SELECT * FROM items ORDER BY id DESC LIMIT ?`
+	const sqlStr = `SELECT id, category, price FROM items ORDER BY id DESC LIMIT ?`
+	rows, err := ab.db.Query(sqlStr, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +67,8 @@ func (ab *AccountBook) GetItems(limit int) ([]*Item, error) {
 	// rows.Nextはすべての行を取得し終わるとfalseを返す
 	for rows.Next() {
 		var item Item
-		// TODO:
 		// rows.Scanで取得した行からデータを取り出し、itemの各フィールドに入れる
+		err := rows.Scan(&item.ID, &item.Category, &item.Price)
 		if err != nil {
 			return nil, err
 		}
