@@ -32,7 +32,8 @@ func main() {
 	// HandlersをNewHandlersを使って作成
 	hs := NewHandlers(ab)
 
-	// TODO: ハンドラの登録
+	// ハンドラの登録
+	http.HandleFunc("/", hs.ListHandler)
 
 	fmt.Println("http://localhost:8080 で起動中...")
 	// HTTPサーバを起動する

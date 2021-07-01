@@ -5,12 +5,12 @@ import (
 	"net/http"
 )
 
-// HTTPハンドラを集めた型
+// Handlers HTTPハンドラを集めた型
 type Handlers struct {
 	ab *AccountBook
 }
 
-// Handlersを作成する
+// NewHandlers Handlersを作成する
 func NewHandlers(ab *AccountBook) *Handlers {
 	return &Handlers{ab: ab}
 }
@@ -39,16 +39,18 @@ var listTmpl = template.Must(template.New("list").Parse(`<!DOCTYPE html>
 </html>
 `))
 
-// 最新の入力データを表示するハンドラ
+// ListHandler 最新の入力データを表示するハンドラ
 func (hs *Handlers) ListHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: 最新の10件を取得し、itemsに入れる
+	// 最新の10件を取得し、itemsに入れる
+	items, err := hs.ab.GetItems(10)
 	if err != nil {
-		// TODO: http.Errorを使って、InternalServerErrorでエラーを返す
+		// http.Errorを使って、InternalServerErrorでエラーを返す
+		http.Error(w, "InternalServerErrorでエラーを返す", http.StatusInternalServerError)
 		return
 	}
 
-	// TODO: 取得したitemsをテンプレートに埋め込む
-	if /* ここに書く */; err != nil {
+	// 取得したitemsをテンプレートに埋め込む
+	if err := listTmpl.Execute(w, items); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
