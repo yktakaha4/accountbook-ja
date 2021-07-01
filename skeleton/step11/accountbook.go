@@ -10,18 +10,18 @@ type Item struct {
 	Price    int
 }
 
-// 家計簿の処理を行う型
+// AccountBook 家計簿の処理を行う型
 type AccountBook struct {
 	db *sql.DB
 }
 
-// 新しいAccountBookを作成する
+// NewAccountBook 新しいAccountBookを作成する
 func NewAccountBook(db *sql.DB) *AccountBook {
 	// AccountBookのポインタを返す
 	return &AccountBook{db: db}
 }
 
-// テーブルがなかったら作成する
+// CreateTable テーブルがなかったら作成する
 func (ab *AccountBook) CreateTable() error {
 	const sqlStr = `CREATE TABLE IF NOT EXISTS items(
 		id        INTEGER PRIMARY KEY,
@@ -37,7 +37,7 @@ func (ab *AccountBook) CreateTable() error {
 	return nil
 }
 
-// データベースに新しいItemを追加する
+// AddItem データベースに新しいItemを追加する
 func (ab *AccountBook) AddItem(item *Item) error {
 	const sqlStr = `INSERT INTO items(category, price) VALUES (?,?);`
 	_, err := ab.db.Exec(sqlStr, item.Category, item.Price)
@@ -47,7 +47,7 @@ func (ab *AccountBook) AddItem(item *Item) error {
 	return nil
 }
 
-// 最近追加したものを最大limit件だけItemを取得する
+// GetItems 最近追加したものを最大limit件だけItemを取得する
 // エラーが発生したら第2戻り値で返す
 func (ab *AccountBook) GetItems(limit int) ([]*Item, error) {
 	// ORDER BY id DESCでidの降順（大きい順）=最近追加したものが先にくる
@@ -76,7 +76,7 @@ func (ab *AccountBook) GetItems(limit int) ([]*Item, error) {
 	return items, nil
 }
 
-// 集計結果を取得する
+// GetSummaries 集計結果を取得する
 func (ab *AccountBook) GetSummaries() ([]*Summary, error) {
 	const sqlStr = `
 	SELECT
@@ -116,7 +116,7 @@ type Summary struct {
 	Sum      int
 }
 
-// 平均を取得する
+// Avg 平均を取得する
 func (s *Summary) Avg() float64 {
 	// Countが0だとゼロ除算になるため
 	// そのまま0を返す

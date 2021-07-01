@@ -6,12 +6,12 @@ import (
 	"strconv"
 )
 
-// HTTPハンドラを集めた型
+// Handlers HTTPハンドラを集めた型
 type Handlers struct {
 	ab *AccountBook
 }
 
-// Handlersを作成する
+// NewHandlers Handlersを作成する
 func NewHandlers(ab *AccountBook) *Handlers {
 	return &Handlers{ab: ab}
 }
@@ -49,7 +49,7 @@ var listTmpl = template.Must(template.New("list").Parse(`<!DOCTYPE html>
 </html>
 `))
 
-// 最新の入力データを表示するハンドラ
+// ListHandler 最新の入力データを表示するハンドラ
 func (hs *Handlers) ListHandler(w http.ResponseWriter, r *http.Request) {
 	// 最新の10件を取得する
 	items, err := hs.ab.GetItems(10)
@@ -65,7 +65,7 @@ func (hs *Handlers) ListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// 保存
+// SaveHandler 保存
 func (hs *Handlers) SaveHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		code := http.StatusMethodNotAllowed
@@ -113,7 +113,7 @@ var summaryTmpl = template.Must(template.New("summary").Parse(`<!DOCTYPE html>
 			var data = google.visualization.arrayToDataTable([
 				['品目', '値段'],
 				{{- range . -}}
-				['{{js .Category}}', {{- /* TODO: 合計を埋め込む */ -}}],
+				['{{js .Category}}', {{.Sum}}],
 				{{- end -}}
 			]);
 		
@@ -141,16 +141,17 @@ var summaryTmpl = template.Must(template.New("summary").Parse(`<!DOCTYPE html>
 	</body>
 </html>`))
 
-// 集計を表示するハンドラ
+// SummaryHandler 集計を表示するハンドラ
 func (hs *Handlers) SummaryHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: 集計結果を取得し、summariesに入れる
+	// 集計結果を取得し、summariesに入れる
+	summaries, err := hs.ab.GetSummaries()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// TODO: 取得した集計結果をテンプレートに埋め込む
-	if /* ここに書く */; err != nil {
+	// 取得した集計結果をテンプレートに埋め込む
+	if summaryTmpl.Execute(w, summaries); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
